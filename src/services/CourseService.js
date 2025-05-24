@@ -1,4 +1,4 @@
-import { classroom } from "../config/googleConfig";
+import { classroom } from "../config/googleConfig.js";
 
 class CourseService {
     constructor() {
