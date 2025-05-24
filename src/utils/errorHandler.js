@@ -1,5 +1,6 @@
 export default function (err, req, res, next) {
     console.error("Terjadi error:", err);
+    if (res.headerSent) return next(err);
 
     let error = {
         message: err.message || "Internal Server Error",
