@@ -72,6 +72,24 @@ class CourseService {
             throw err;
         }
     }
+
+    async getAssignments(courseId) {
+        try {
+            const response = await this.classroom.courses.courseWork({
+                courseId,
+                courseWorkState: ["PUBLISHED", "DRAFT"],
+                pageSize: 200
+            });
+
+            return response.data;
+        } catch (error) {
+            console.error("Terjadi kesalahan saat mengambil data tugas di kelas:", error);
+            const err = new Error("Gagal mengambil data tugas di kelas", courseId);
+            err.statusCode = error.code || 500;
+
+            throw err;
+        }
+    }
 }
 
 export default new CourseService();
