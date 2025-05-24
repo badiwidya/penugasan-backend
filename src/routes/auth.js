@@ -3,8 +3,8 @@ import AuthController from "../controllers/AuthController.js";
 
 const router = express.Router();
 
-router.get("/auth/google", AuthController.redirectAuth);
-router.get("/auth/google/callback", AuthController.callbackHandler);
+router.get("/google", AuthController.redirectAuth);
+router.get("/google/callback", AuthController.callbackHandler);
 router.post("/logout", logout);
 
 export default router;

@@ -5,6 +5,9 @@ import session from "express-session";
 
 import errorHandler from "./utils/errorHandler.js";
 
+import authRoutes from "./routes/auth.js";
+import apiRoutes from "./routes/api.js";
+
 dotenv.config();
 
 const app = express();
@@ -30,6 +33,9 @@ app.use(
 );
 
 app.use(express.json());
+
+app.use("/auth", authRoutes);
+app.use("/api", apiRoutes);
 
 app.use(errorHandler);
 
