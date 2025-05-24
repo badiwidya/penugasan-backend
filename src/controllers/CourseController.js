@@ -3,6 +3,9 @@ import CourseService from "../services/CourseService.js";
 class CourseController {
     constructor() {
         this.service = CourseService;
+
+        this.getAllCourses = this.getAllCourses.bind(this);
+        this.getCourse = this.getCourse.bind(this);
     }
 
     async getAllCourses(req, res, next) {

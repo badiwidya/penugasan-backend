@@ -19,6 +19,10 @@ class AuthController {
     constructor() {
         this.oauth2Client = oauth2Client;
         this.SCOPES = SCOPES;
+
+        this.redirectAuth = this.redirectAuth.bind(this);
+        this.callbackHandler = this.callbackHandler.bind(this);
+        this.logout = this.logout.bind(this);
     }
 
     redirectAuth(req, res) {
