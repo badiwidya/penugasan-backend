@@ -22,6 +22,22 @@ class CourseService {
             throw err;
         }
     }
+
+    async getCourse(courseId) {
+        try {
+            const response = await this.classroom.courses.get({
+                id: courseId,
+            });
+
+            return response.data;
+        } catch (error) {
+            console.error("Terjadi kesalahan saat mengambil data kelas:", error);
+            const err = new Error("Gagal mengambil data kelas");
+            err.statusCode = error.code || 500;
+
+            throw err;
+        }
+    }
 }
 
 export default new CourseService();
