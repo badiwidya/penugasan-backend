@@ -41,7 +41,7 @@ class CourseController {
         }
     }
 
-    async getStudents() {
+    async getStudents(req, res, next) {
         try {
             const { courseId } = req.params;
 
@@ -57,7 +57,7 @@ class CourseController {
         }
     }
 
-    async getTeachers() {
+    async getTeachers(req, res, next) {
         try {
             const { courseId } = req.params;
 
@@ -73,7 +73,7 @@ class CourseController {
         }
     }
 
-    async getAssignmentsForCourse() {
+    async getAssignmentsForCourse(req, res, next) {
         try {
             const { courseId } = req.params;
 
