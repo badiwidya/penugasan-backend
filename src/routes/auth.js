@@ -5,6 +5,6 @@ const router = express.Router();
 
 router.get("/google", AuthController.redirectAuth);
 router.get("/google/callback", AuthController.callbackHandler);
-router.post("/logout", logout);
+router.post("/logout", AuthController.logout);
 
 export default router;
