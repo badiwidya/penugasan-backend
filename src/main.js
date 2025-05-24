@@ -3,6 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import session from "express-session";
 
+import errorHandler from "./utils/errorHandler.js";
+
 dotenv.config();
 
 const app = express();
@@ -28,6 +30,8 @@ app.use(
 );
 
 app.use(express.json());
+
+app.use(errorHandler);
 
 app.listen(port, () => {
     console.log(`Server berjalan di http://localhost:${port}`);
