@@ -75,7 +75,7 @@ class CourseService {
 
     async getAssignments(courseId) {
         try {
-            const response = await this.classroom.courses.courseWork({
+            const response = await this.classroom.courses.courseWork.list({
                 courseId,
                 courseWorkState: ["PUBLISHED", "DRAFT"],
                 pageSize: 200
