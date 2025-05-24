@@ -77,7 +77,7 @@ class CourseService {
         try {
             const response = await this.classroom.courses.courseWork.list({
                 courseId,
-                courseWorkState: ["PUBLISHED", "DRAFT"],
+                courseWorkStates: ["PUBLISHED", "DRAFT"],
                 pageSize: 200
             });
 
