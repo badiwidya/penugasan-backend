@@ -38,6 +38,40 @@ class CourseService {
             throw err;
         }
     }
+
+    async getStudents(courseId) {
+        try {
+            const response = await this.classroom.courses.students.list({
+                courseId,
+                pageSize: 20,
+            });
+
+            return response.data;
+        } catch (error) {
+            console.error("Terjadi kesalahan saat mengambil data murid:", error);
+            const err = new Error("Gagal mengambil data murid");
+            err.statusCode = error.code || 500;
+
+            throw err;
+        }
+    }
+
+    async getTeachers(courseId) {
+        try {
+            const response = await this.classroom.courses.teachers.list({
+                courseId,
+                pageSize: 20,
+            });
+
+            return response.data;
+        } catch (error) {
+            console.error("Terjadi kesalahan saat mengambil data guru:", error);
+            const err = new Error("Gagal mengambil data guru");
+            err.statusCode = error.code || 500;
+
+            throw err;
+        }
+    }
 }
 
 export default new CourseService();
