@@ -50,9 +50,7 @@ class AuthController {
             this.oauth2Client.setCredentials(tokens);
 
             req.session.tokens = tokens; // Simpen token di session
-            res.status(200).json({
-                message: "Autentikasi berhasil",
-            });
+            res.redirect("http://localhost:5173");
         } catch (error) {
             console.error("Terjadi kesalahan:", error);
             res.status(500).json({
@@ -78,6 +76,8 @@ class AuthController {
                 });
             }
         });
+
+        res.redirect("http://localhost:5173");
     }
 }
 
