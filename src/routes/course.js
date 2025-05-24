@@ -5,8 +5,8 @@ const router = express.Router();
 
 router.get("/", CourseController.getAllCourses);
 router.get("/:courseId", CourseController.getCourse);
-router.get("/:courseId/students", (req, res) => {});
-router.get("/:courseId/teachers", (req, res) => {});
+router.get("/:courseId/students", CourseController.getStudents);
+router.get("/:courseId/teachers", CourseController.getTeachers);
 router.get("/:courseId/assignments", (req, res) => {});
 
 export default router;
