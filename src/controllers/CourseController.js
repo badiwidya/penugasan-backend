@@ -8,6 +8,7 @@ class CourseController {
         this.getCourse = this.getCourse.bind(this);
         this.getStudents = this.getStudents.bind(this);
         this.getTeachers = this.getTeachers.bind(this);
+        this.getAssignmentsForCourse = this.getAssignmentsForCourse.bind(this);
     }
 
     async getAllCourses(req, res, next) {
@@ -66,6 +67,22 @@ class CourseController {
                 status: true,
                 message: "Berhasil mengambil data guru",
                 data: students,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getAssignmentsForCourse() {
+        try {
+            const { courseId } = req.params;
+
+            const assignments = this.service.getAssignments(courseId);
+
+            res.json({
+                status: true,
+                message: "Berhasil mengambil data tugas di kelas",
+                data: assignments,
             });
         } catch (error) {
             next(error);
