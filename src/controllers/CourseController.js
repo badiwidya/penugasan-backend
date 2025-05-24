@@ -18,6 +18,22 @@ class CourseController {
             next(error);
         }
     }
+
+    async getCourse(req, res, next) {
+        try {
+            const { courseId } = req.params;
+
+            const course = await this.service.getCourse(courseId);
+
+            res.json({
+                status: true,
+                message: "Berhasil mengambil data kelas",
+                data: course
+            });
+        } catch (error) {
+            next(error);            
+        }
+    }
 }
 
 export default new CourseController();
