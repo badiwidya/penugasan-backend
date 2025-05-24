@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.use(authMiddleware);
 
-router.use(courseRoute);
+router.use("/courses", courseRoute);
 
 export default router;
