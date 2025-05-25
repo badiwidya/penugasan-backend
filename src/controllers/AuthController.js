@@ -22,6 +22,7 @@ class AuthController {
 
         this.redirectAuth = this.redirectAuth.bind(this);
         this.callbackHandler = this.callbackHandler.bind(this);
+        this.checkAuth = this.checkAuth.bind(this);
         this.logout = this.logout.bind(this);
     }
 
@@ -58,6 +59,16 @@ class AuthController {
                 error: "Terjadi kesalahan",
                 error,
             });
+        }
+    }
+
+    checkAuth(req, res) {
+        if (req.session.tokens) {
+            res.json({
+                authenticated: true,
+            });
+        } else {
+            res.status(401).json({ authenticated: false });
         }
     }
 
