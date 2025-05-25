@@ -5,6 +5,7 @@ class AssignmentController {
         this.service = AssignmentService;
 
         this.getAllAssignments = this.getAllAssignments.bind(this);
+        this.createBatchAssignments = this.createBatchAssignments.bind(this);
     }
 
     async getAllAssignments(req, res, next) {
@@ -15,6 +16,35 @@ class AssignmentController {
                 status: true,
                 message: "Berhasil mengambil data semua tugas di kelasnya masing-masing",
                 data: assignments,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async createBatchAssignments(req, res, next) {
+        try {
+            const { assignments } = req.body;
+            if (!assignments || !Array.isArray(assignments) || assignments.length === 0) {
+                const error = new Error("Array assignment dibutuhkan");
+                error.statusCode = 400;
+                throw error;
+            }
+
+            const responses = await this.service.createBatchAssignments(assignments);
+
+            if (responses.some((response) => response.success === false)) {
+                return res.json({
+                    status: true,
+                    message: "Tugas berhasil dibuat, tetapi ada beberapa yang gagal",
+                    data: responses,
+                });
+            }
+
+            res.json({
+                status: true,
+                message: "Tugas berhasil dibuat",
+                data: responses,
             });
         } catch (error) {
             next(error);
