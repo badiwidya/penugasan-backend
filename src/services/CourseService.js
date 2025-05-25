@@ -46,7 +46,7 @@ class CourseService {
                 pageSize: 20,
             });
 
-            return response.data;
+            return response.data.students || [];
         } catch (error) {
             console.error("Terjadi kesalahan saat mengambil data murid:", error);
             const err = new Error("Gagal mengambil data murid");
@@ -63,7 +63,7 @@ class CourseService {
                 pageSize: 20,
             });
 
-            return response.data;
+            return response.data.teachers || [];
         } catch (error) {
             console.error("Terjadi kesalahan saat mengambil data guru:", error);
             const err = new Error("Gagal mengambil data guru");
@@ -81,7 +81,7 @@ class CourseService {
                 pageSize: 200
             });
 
-            return response.data;
+            return response.data.courseWork || [];
         } catch (error) {
             console.error("Terjadi kesalahan saat mengambil data tugas di kelas:", error);
             const err = new Error("Gagal mengambil data tugas di kelas", courseId);
