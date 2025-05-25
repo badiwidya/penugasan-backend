@@ -77,12 +77,12 @@ class CourseController {
         try {
             const { courseId } = req.params;
 
-            const assignments = this.service.getAssignments(courseId);
+            const assignments = await this.service.getAssignments(courseId);
 
             res.json({
                 status: true,
                 message: "Berhasil mengambil data tugas di kelas",
-                data: assignments,
+                data: assignments || [],
             });
         } catch (error) {
             next(error);
