@@ -11,4 +11,27 @@ router.use("/courses", courseRoute);
 
 router.use("/assignments", assignmentRoute);
 
+router.get("/get-image", async (req, res) => {
+    const url = req.query.url;
+
+    try {
+        const imageResponse = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0',
+                'Referer': 'https://accounts.google.com',
+            }
+        });
+        if (!imageResponse.ok) {
+            throw new Error("Gagal mengambil gambar");
+        }
+
+        res.set("Content-Type", imageResponse.headers.get("content-type"));
+        const buffer = await imageResponse.arrayBuffer();
+
+        res.send(Buffer.from(buffer));
+    } catch (error) {
+        next(error);
+    }
+});
+
 export default router;
