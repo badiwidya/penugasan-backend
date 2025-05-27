@@ -11,29 +11,39 @@ class CourseService {
 
             const mappedData = await Promise.all(
                 courses.map(async (course) => {
-                    const [teachers, students] = await Promise.all([
-                        this.getTeachers(course.id),
-                        this.getStudents(course.id),
-                    ]);
+                    try {
+                        const [teachers, students] = await Promise.all([
+                            this.getTeachers(course.id),
+                            this.getStudents(course.id),
+                        ]);
 
-                    return {
-                        id: course.id,
-                        name: course.name,
-                        enrollmentCode: course.enrollmentCode,
-                        alternateLink: course.alternateLink,
-                        teachers: teachers.map(({ profile }) => ({
-                            profile: {
-                                name: { fullName: profile.name.fullName },
-                                photoUrl: profile.photoUrl,
-                            },
-                        })),
-                        students: students.map(({ profile }) => ({
-                            profile: {
-                                name: { fullName: profile.name.fullName },
-                                photoUrl: profile.photoUrl,
-                            },
-                        })),
-                    };
+                        return {
+                            id: course.id,
+                            name: course.name,
+                            enrollmentCode: course.enrollmentCode,
+                            alternateLink: course.alternateLink,
+                            teachers: teachers.map(({ profile }) => ({
+                                profile: {
+                                    name: { fullName: profile.name.fullName },
+                                    photoUrl: profile.photoUrl,
+                                },
+                            })),
+                            students: students.map(({ profile }) => ({
+                                profile: {
+                                    name: { fullName: profile.name.fullName },
+                                    photoUrl: profile.photoUrl,
+                                },
+                            })),
+                            status: true,
+                        };
+                    } catch (error) {
+                        console.log("Terjadi error saat ingin mengambil data kelas", course.id);
+                        return {
+                            id: course.id,
+                            name: course.name,
+                            status: false,
+                        }
+                    }
                 })
             );
 
