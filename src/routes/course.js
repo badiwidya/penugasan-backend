@@ -8,5 +8,6 @@ router.get("/:courseId", CourseController.getCourse);
 router.get("/:courseId/students", CourseController.getStudents);
 router.get("/:courseId/teachers", CourseController.getTeachers);
 router.get("/:courseId/assignments", CourseController.getAssignmentsForCourse);
+router.get("/:courseId/topics", CourseController.getTopicsForCourse);
 
 export default router;
