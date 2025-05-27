@@ -31,6 +31,50 @@ class TopicService {
             throw err;
         }
     }
+
+    async createTopic(topic, courseId) {
+        try {
+            const res = await this.classroom.courses.topics.create({
+                courseId,
+                requestBody: {
+                    name: topic,
+                },
+            });
+
+            return {
+                courseId,
+                success: true,
+                topic: res.data,
+            };
+        } catch (error) {
+            console.error("Terjadi kesalahan saat membuat topik baru untuk", courseId, ", Error:", error.message);
+
+            return {
+                courseId,
+                success: false,
+                error: error.message || "Internal server error",
+            };
+        }
+    }
+
+    async createBatchTopics(topics) {
+        try {
+            const topicsPromises = topics.map(async ({ topic, courseId }) => {
+                try {
+                    return this.createTopic(topic.name, courseId);
+                } catch (error) {
+                    console.log("Terjadi error saat membuat topik untuk kelas", courseId);
+                    throw error;
+                }
+            });
+
+            const response = await Promise.all(topicsPromises);
+
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 export default new TopicService();
