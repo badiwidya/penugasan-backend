@@ -2,6 +2,7 @@ import express from "express";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import courseRoute from "./course.js";
 import assignmentRoute from "./assignment.js";
+import topicsRoute from "./topic.js";
 
 const router = express.Router();
 
@@ -10,6 +11,8 @@ router.use(authMiddleware);
 router.use("/courses", courseRoute);
 
 router.use("/assignments", assignmentRoute);
+
+router.use("/topics", topicsRoute);
 
 router.get("/get-image", async (req, res) => {
     const url = req.query.url;
