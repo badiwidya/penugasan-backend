@@ -78,13 +78,30 @@ class CourseService {
             const response = await this.classroom.courses.courseWork.list({
                 courseId,
                 courseWorkStates: ["PUBLISHED", "DRAFT"],
-                pageSize: 200
+                pageSize: 200,
             });
 
             return response.data.courseWork || [];
         } catch (error) {
             console.error("Terjadi kesalahan saat mengambil data tugas di kelas:", error);
             const err = new Error("Gagal mengambil data tugas di kelas", courseId);
+            err.statusCode = error.code || 500;
+
+            throw err;
+        }
+    }
+
+    async getTopics(courseId) {
+        try {
+            const response = await this.classroom.courses.topics.list({
+                courseId,
+                pageSize: 200,
+            });
+
+            return response.data.topic || [];
+        } catch (error) {
+            console.error("Terjadi kesalahan saat mengambil data topik di kelas:", error);
+            const err = new Error("Gagal mengambil data topik di kelas", courseId);
             err.statusCode = error.code || 500;
 
             throw err;
