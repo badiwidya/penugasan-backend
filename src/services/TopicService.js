@@ -12,7 +12,7 @@ class TopicService {
             const courses = await this.helper.listCourses();
 
             const topicsPromises = courses.map(async (course) => {
-                const courseTopics = await this.helper.getCourse(course.id);
+                const courseTopics = await this.helper.getTopics(course.id);
 
                 return {
                     courseId: course.id,
