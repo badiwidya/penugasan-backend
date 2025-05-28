@@ -30,7 +30,7 @@ class AssignmentService {
             const courses = await this.helper.listCourses();
             const assignments = {};
             const pairIds = {};
-            const firstAssignmentSuccess = false;
+            let firstAssignmentSuccess = false;
 
             await Promise.all(
                 courses.map(async (course) => {
@@ -47,7 +47,7 @@ class AssignmentService {
                         });
 
                         topicsForCourse.forEach((topic) => {
-                            pairIds[course.id][topic.name] = topic.id;
+                            pairIds[course.id][topic.name] = topic.topicId;
                         });
 
                         pairIds[course.id].status = true;
@@ -55,12 +55,12 @@ class AssignmentService {
                         if (!firstAssignmentSuccess) {
                             topicsForCourse.forEach((topic) => {
                                 if (!(topic.name in assignments)) {
-                                    assignments[topic.name] = {};
+                                    assignments[topic.name] = [];
                                 }
                             });
 
                             assignmentsForCourse.forEach((assignment) => {
-                                const topicName = topicsAvailable.find((topic) => topic.id === assignment.topicId).name;
+                                const topicName = topicsForCourse.find((topic) => topic.topicId === assignment.topicId).name;
 
                                 let dueDate = null;
                                 if (assignment.dueDate) {
@@ -75,6 +75,7 @@ class AssignmentService {
                                     creationTime: assignment.creationTime,
                                     scheduledTime: assignment.scheduledTime,
                                     materials: assignment.materials,
+                                    state: assignment.state,
                                 });
                             });
                             firstAssignmentSuccess = true;
@@ -84,7 +85,7 @@ class AssignmentService {
                             "Terjadi error saat mengambil data pairId untuk kelas",
                             course.id,
                             "error:",
-                            error.message
+                            error
                         );
                         pairIds[course.id] = {
                             status: false,
@@ -96,7 +97,7 @@ class AssignmentService {
             return { assignments, pairIds };
         } catch (error) {
             console.error("Terjadi kesalahan saat mengambil data tugas di kelas:", error.message);
-            const err = new Error("Gagal mengambil data tugas di kelas", courseId);
+            const err = new Error("Gagal mengambil data tugas");
             err.statusCode = error.code || 500;
 
             throw err;
@@ -178,12 +179,12 @@ class AssignmentService {
             })
         );
 
-        const hasFailed = response.some((r) => r.status === false);
+        const hasFailed = response.some((r) => r.value.status === false);
 
         if (hasFailed) {
             await Promise.allSettled(
                 successfullyCreated.map(async ({ courseId, courseWorkId }) => {
-                    this.classroom.courses.courseWork.delete({
+                    await this.classroom.courses.courseWork.delete({
                         courseId,
                         id: courseWorkId,
                     });
@@ -206,7 +207,7 @@ class AssignmentService {
         const response = await Promise.allSettled(
             assignments.map(async ({ courseId, courseWorkId }) => {
                 try {
-                    this.classroom.courses.courseWork.patch({
+                    await this.classroom.courses.courseWork.patch({
                         courseId,
                         id: courseWorkId,
                         updateMask: "state",
@@ -231,13 +232,13 @@ class AssignmentService {
             })
         );
 
-        const failed = response.filter((r) => r.status === false);
+        const failed = response.filter((r) => r.value.status === false);
 
-        if (failed) {
+        if (failed.length > 0) {
             return {
                 status: "partial",
                 message: "Tugas ini gagal dipublish di beberapa kelas, silakan cek sendiri",
-                detail: failed.map((f) => f.courseId),
+                detail: failed.map((f) => f.value.courseId),
             };
         }
 

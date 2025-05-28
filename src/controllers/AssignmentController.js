@@ -14,6 +14,8 @@ class AssignmentController {
         try {
             const assignments = await this.service.listAssignments();
 
+            console.log(assignments)
+
             res.json({
                 status: true,
                 message: "Berhasil mengambil data semua tugas di kelasnya masing-masing",

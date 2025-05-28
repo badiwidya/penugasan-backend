@@ -64,12 +64,12 @@ class TopicService {
             })
         );
 
-        const hasFailed = response.some((r) => r.status === false);
+        const hasFailed = response.some((r) => r.value.status === false);
 
         if (hasFailed) {
             await Promise.allSettled(
                 successfullyCreated.map(async ({ courseId, topicId }) => {
-                    this.classroom.courses.topics.delete({
+                    await this.classroom.courses.topics.delete({
                         courseId,
                         id: topicId,
                     });
