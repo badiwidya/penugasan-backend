@@ -145,12 +145,18 @@ class AssignmentService {
                         };
                     }
 
+                    let requestBody = {
+                        ...assignment,
+                        workType: "ASSIGNMENT",
+                    };
+
+                    if (!assignment.state) {
+                        requestBody.state = "DRAFT";
+                    }
+
                     const apiResponse = await this.classroom.courses.courseWork.create({
                         courseId,
-                        requestBody: {
-                            ...assignment,
-                            workType: "ASSIGNMENT",
-                        },
+                        requestBody
                     });
 
                     successfullyCreated.push({
