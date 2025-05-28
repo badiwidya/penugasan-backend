@@ -32,48 +32,60 @@ class TopicService {
         }
     }
 
-    async createTopic(topic, courseId) {
-        try {
-            const res = await this.classroom.courses.topics.create({
-                courseId,
-                requestBody: {
-                    name: topic,
-                },
-            });
-
-            return {
-                courseId,
-                success: true,
-                topic: res.data,
-            };
-        } catch (error) {
-            console.error("Terjadi kesalahan saat membuat topik baru untuk", courseId, ", Error:", error.message);
-
-            return {
-                courseId,
-                success: false,
-                error: error.message || "Internal server error",
-            };
-        }
-    }
-
     async createBatchTopics(topics) {
-        try {
-            const topicsPromises = topics.map(async ({ topic, courseId }) => {
+        const successfullyCreated = [];
+
+        const response = await Promise.allSettled(
+            topics.map(async ({ topic, courseId }) => {
                 try {
-                    return this.createTopic(topic.name, courseId);
+                    const apiResponse = await this.classroom.courses.topics.create({
+                        courseId,
+                        requestBody: {
+                            name: topic,
+                        },
+                    });
+
+                    successfullyCreated.push({
+                        courseId,
+                        topicId: apiResponse.data.topicId,
+                    });
+
+                    return {
+                        courseId,
+                        success: true,
+                    };
                 } catch (error) {
-                    console.log("Terjadi error saat membuat topik untuk kelas", courseId);
-                    throw error;
+                    console.log("Terjadi error saat membuat topik di:", courseId, " Error:", error.message);
+                    return {
+                        courseId,
+                        success: false,
+                    };
                 }
-            });
+            })
+        );
 
-            const response = await Promise.all(topicsPromises);
+        const hasFailed = response.some((r) => r.success === false);
 
-            return response;
-        } catch (error) {
-            throw error;
+        if (hasFailed) {
+            await Promise.allSettled(
+                successfullyCreated.map(async ({ courseId, topicId }) => {
+                    this.classroom.courses.topics.delete({
+                        courseId,
+                        id: topicId,
+                    });
+                })
+            );
+
+            return {
+                success: false,
+                message: "Ada topik yang gagal dibuat, berhasil rollback",
+            };
         }
+
+        return {
+            success: true,
+            message: "Semua tugas berhasil dibuat",
+        };
     }
 }
 

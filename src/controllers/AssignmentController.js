@@ -1,3 +1,4 @@
+import { json } from "express";
 import AssignmentService from "../services/AssignmentService.js";
 
 class AssignmentController {
@@ -6,6 +7,7 @@ class AssignmentController {
 
         this.getAllAssignments = this.getAllAssignments.bind(this);
         this.createBatchAssignments = this.createBatchAssignments.bind(this);
+        this.publishAllAssignments = this.publishAllAssignments.bind(this);
     }
 
     async getAllAssignments(req, res, next) {
@@ -33,19 +35,18 @@ class AssignmentController {
 
             const responses = await this.service.createBatchAssignments(assignments);
 
-            if (responses.some((response) => response.success === false)) {
-                return res.json({
-                    status: true,
-                    message: "Tugas berhasil dibuat, tetapi ada beberapa yang gagal",
-                    data: responses,
-                });
-            }
+            res.json(responses);
+        } catch (error) {
+            next(error);
+        }
+    }
 
-            res.json({
-                status: true,
-                message: "Tugas berhasil dibuat",
-                data: responses,
-            });
+    async publishAllAssignments(req, res, next) {
+        try {
+            const { assignments } = req.body;
+            const responses = await this.service.publishAssignment(assignments);
+
+            res.json(responses);
         } catch (error) {
             next(error);
         }

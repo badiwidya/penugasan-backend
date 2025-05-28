@@ -34,19 +34,7 @@ class TopicController {
 
             const responses = await this.service.createBatchTopics(topics);
 
-            if (responses.some((response) => response.success === false)) {
-                return res.json({
-                    status: true,
-                    message: "Topik berhasil dibuat, tetapi ada beberapa yang gagal",
-                    data: responses,
-                });
-            }
-
-            res.json({
-                status: true,
-                message: "Topik berhasil dibuat",
-                data: responses,
-            });
+            res.json(responses);
         } catch (error) {
             next(error);
         }
