@@ -67,18 +67,49 @@ class TopicService {
         const hasFailed = response.some((r) => r.value.status === false);
 
         if (hasFailed) {
-            await Promise.allSettled(
+            const rollbackResults = await Promise.allSettled(
                 successfullyCreated.map(async ({ courseId, topicId }) => {
-                    await this.classroom.courses.topics.delete({
+                    let retry = 0;
+                    let success = false;
+                    let lastError = null;
+
+                    while (retry < 3 && !success) {
+                        try {
+                            await this.classroom.courses.courseWork.delete({
+                                courseId,
+                                id: topicId,
+                            });
+                            success = true;
+                            return { courseId, status: "rolled_back" };
+                        } catch (error) {
+                            retry++;
+                            lastError = error;
+                            await new Promise((resolve) => setTimeout(resolve, 300 * retry));
+                        }
+                    }
+
+                    return {
                         courseId,
-                        id: topicId,
-                    });
+                        status: "rollback_failed",
+                        error: lastError.message,
+                    };
                 })
             );
 
+            const failedRollbacks = rollbackResults.filter((result) => result.value?.status === "rollback_failed");
+
+            if (failedRollbacks.length > 0) {
+                console.error("Gagal rollback di kelas:", failedRollbacks);
+                return {
+                    status: false,
+                    message: "Ada tugas yang gagal dibuat DAN gagal di-rollback",
+                    detail: failedRollbacks.map((f) => f.value.courseId),
+                };
+            }
+
             return {
                 status: false,
-                message: "Ada topik yang gagal dibuat, berhasil rollback",
+                message: "Ada tugas yang gagal dibuat, berhasil rollback semua",
             };
         }
 

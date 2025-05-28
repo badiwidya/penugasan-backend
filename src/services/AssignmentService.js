@@ -60,7 +60,9 @@ class AssignmentService {
                             });
 
                             assignmentsForCourse.forEach((assignment) => {
-                                const topicName = topicsForCourse.find((topic) => topic.topicId === assignment.topicId).name;
+                                const topicName = topicsForCourse.find(
+                                    (topic) => topic.topicId === assignment.topicId
+                                ).name;
 
                                 let dueDate = null;
                                 if (assignment.dueDate) {
@@ -81,12 +83,7 @@ class AssignmentService {
                             firstAssignmentSuccess = true;
                         }
                     } catch (error) {
-                        console.log(
-                            "Terjadi error saat mengambil data pairId untuk kelas",
-                            course.id,
-                            "error:",
-                            error
-                        );
+                        console.log("Terjadi error saat mengambil data pairId untuk kelas", course.id, "error:", error);
                         pairIds[course.id] = {
                             status: false,
                         };
@@ -116,7 +113,9 @@ class AssignmentService {
         const seconds = dueTime?.seconds ?? 0;
         const miliseconds = dueTime?.nanos ? dueTime?.nanos / 1e6 : 0;
 
-        return new Date(year, month, day, hours, minutes, seconds, miliseconds);
+        const utcTime = Date.UTC(year, month, day, hours, minutes, seconds, miliseconds);
+
+        return new Date(utcTime);
     }
 
     async createBatchAssignments(assignments) {
@@ -157,7 +156,7 @@ class AssignmentService {
 
                     const apiResponse = await this.classroom.courses.courseWork.create({
                         courseId,
-                        requestBody
+                        requestBody,
                     });
 
                     successfullyCreated.push({
@@ -182,18 +181,49 @@ class AssignmentService {
         const hasFailed = response.some((r) => r.value.status === false);
 
         if (hasFailed) {
-            await Promise.allSettled(
+            const rollbackResults = await Promise.allSettled(
                 successfullyCreated.map(async ({ courseId, courseWorkId }) => {
-                    await this.classroom.courses.courseWork.delete({
+                    let retry = 0;
+                    let success = false;
+                    let lastError = null;
+
+                    while (retry < 3 && !success) {
+                        try {
+                            await this.classroom.courses.courseWork.delete({
+                                courseId,
+                                id: courseWorkId,
+                            });
+                            success = true;
+                            return { courseId, status: "rolled_back" };
+                        } catch (error) {
+                            retry++;
+                            lastError = error;
+                            await new Promise((resolve) => setTimeout(resolve, 300 * retry));
+                        }
+                    }
+
+                    return {
                         courseId,
-                        id: courseWorkId,
-                    });
+                        status: "rollback_failed",
+                        error: lastError.message,
+                    };
                 })
             );
 
+            const failedRollbacks = rollbackResults.filter((result) => result.value?.status === "rollback_failed");
+
+            if (failedRollbacks.length > 0) {
+                console.error("Gagal rollback di kelas:", failedRollbacks);
+                return {
+                    status: false,
+                    message: "Ada tugas yang gagal dibuat DAN gagal di-rollback",
+                    detail: failedRollbacks.map((f) => f.value.courseId),
+                };
+            }
+
             return {
                 status: false,
-                message: "Ada tugas yang gagal dibuat, berhasil rollback",
+                message: "Ada tugas yang gagal dibuat, berhasil rollback semua",
             };
         }
 
