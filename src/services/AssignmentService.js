@@ -134,6 +134,12 @@ class AssignmentService {
 
                     if (assignment.dueDate) {
                         const dueDate = new Date(assignment.dueDate);
+                        const nowDate = new Date();
+
+                        if (dueDate < nowDate) {
+                            throw new Error("Tenggat tidak boleh masa lampau")
+                        }
+
                         assignment.dueDate = {
                             year: dueDate.getUTCFullYear(),
                             month: dueDate.getUTCMonth() + 1,
