@@ -118,41 +118,16 @@ class AssignmentService {
         return new Date(year, month, day, hours, minutes, seconds, miliseconds);
     }
 
-    async createAssignment(courseId, assignment) {
-        try {
-            if (!assignment || !assignment.title) {
-                throw new Error("Judul tugas diperlukan!");
-            }
-
-            const response = await this.classroom.courses.courseWork.create({
-                courseId,
-                requestBody: {
-                    ...assignment,
-                    workType: "ASSIGNMENT",
-                    state: "PUBLISHED",
-                },
-            });
-
-            return {
-                courseId,
-                success: true,
-                assignment: response.data,
-            };
-        } catch (error) {
-            console.error("Terjadi kesalahan saat membuat tugas baru untuk", courseId, ", Error:", error.message);
-
-            return {
-                courseId,
-                success: false,
-                error: error.message || "Internal server error",
-            };
-        }
-    }
-
     async createBatchAssignments(assignments) {
-        try {
-            const assignmentsPromises = assignments.map(async ({ courseId, assignment }) => {
+        const successfullyCreated = [];
+
+        const response = await Promise.allSettled(
+            assignments.map(async ({ courseId, assignment }) => {
                 try {
+                    if (!assignment || !assignment.title) {
+                        throw new Error("Judul tugas diperlukan!");
+                    }
+
                     if (assignment.maxPoints !== undefined) {
                         assignment.maxPoints = Math.max(0, parseInt(assignment.maxPoints) || 0);
                     }
@@ -170,28 +145,59 @@ class AssignmentService {
                         };
                     }
 
-                    return this.createAssignment(courseId, assignment);
+                    const apiResponse = await this.classroom.courses.courseWork.create({
+                        courseId,
+                        requestBody: {
+                            ...assignment,
+                            workType: "ASSIGNMENT",
+                            state: "DRAFT",
+                        },
+                    });
+
+                    successfullyCreated.push({
+                        courseId,
+                        courseWorkId: apiResponse.data.id,
+                    });
+
+                    return {
+                        courseId,
+                        success: true,
+                    };
                 } catch (error) {
-                    console.error("Terjadi kesalahan saat membuat tugas baru:", error.message);
+                    console.log("Terjadi error saat membuat tugas di:", courseId, " Error:", error.message);
                     return {
                         courseId,
                         success: false,
-                        error: error.message,
                     };
                 }
-            });
+            })
+        );
 
-            const response = await Promise.all(assignmentsPromises);
+        const hasFailed = response.some((r) => r.success === false);
 
-            return response;
-        } catch (error) {
-            console.error("Terjadi kesalahan saat mengambil data tugas di kelas:", error);
-            const err = new Error("Gagal mengambil data tugas di kelas", courseId);
-            err.statusCode = error.code || 500;
+        if (hasFailed) {
+            await Promise.allSettled(
+                successfullyCreated.map(async ({ courseId, courseWorkId }) => {
+                    this.classroom.courses.courseWork.delete({
+                        courseId,
+                        id: courseWorkId,
+                    });
+                })
+            );
 
-            throw err;
+            return {
+                success: false,
+                message: "Ada tugas yang gagal dibuat, berhasil rollback",
+            }
         }
+
+        return {
+            success: true,
+            message: "Semua tugas berhasil dibuat"
+        } 
     }
+
+
 }
 
 export default new AssignmentService();
