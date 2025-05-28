@@ -150,7 +150,6 @@ class AssignmentService {
                         requestBody: {
                             ...assignment,
                             workType: "ASSIGNMENT",
-                            state: "DRAFT",
                         },
                     });
 
@@ -188,16 +187,59 @@ class AssignmentService {
             return {
                 success: false,
                 message: "Ada tugas yang gagal dibuat, berhasil rollback",
-            }
+            };
         }
 
         return {
             success: true,
-            message: "Semua tugas berhasil dibuat"
-        } 
+            message: "Semua tugas berhasil dibuat",
+        };
     }
 
+    async publishAssignment(assignments) {
+        const response = await Promise.allSettled(
+            assignments.map(async ({ courseId, courseWorkId }) => {
+                try {
+                    this.classroom.courses.courseWork.patch({
+                        courseId,
+                        id: courseWorkId,
+                        updateMask: "state",
+                        requestBody: {
+                            state: "PUBLISHED",
+                        },
+                    });
 
+                    return {
+                        success: true,
+                        courseId,
+                        courseWorkId,
+                    };
+                } catch (error) {
+                    console.log("Gagal saat publish tugas untuk kelas", courseId, " Error:", error.message);
+                    return {
+                        success: false,
+                        courseId,
+                        courseWorkId,
+                    };
+                }
+            })
+        );
+
+        const failed = response.filter((r) => r.success === false);
+
+        if (failed) {
+            return {
+                success: "partial",
+                message: "Tugas ini gagal dipublish di beberapa kelas, silakan cek sendiri",
+                detail: failed.map((f) => f.courseId),
+            };
+        }
+
+        return {
+            success: true,
+            message: "Semua tugas berhasil dipublish",
+        };
+    }
 }
 
 export default new AssignmentService();
