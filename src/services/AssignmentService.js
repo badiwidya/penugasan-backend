@@ -277,6 +277,53 @@ class AssignmentService {
             message: "Semua tugas berhasil dipublish",
         };
     }
+
+    async deleteBatchAssignment(assignments) {
+        const response = await Promise.allSettled(
+            assignments.map(async ({ courseId, courseWorkId }) => {
+                let retry = 0;
+                let success = false;
+                let lastError = null;
+
+                while (retry < 3 && !success) {
+                    try {
+                        await this.classroom.courses.courseWork.delete({
+                            courseId,
+                            id: courseWorkId,
+                        });
+                        success = true;
+                        return { courseId, status: true };
+                    } catch (error) {
+                        retry++;
+                        lastError = error;
+                        await new Promise((resolve) => setTimeout(resolve, 300 * retry));
+                    }
+                }
+
+                return {
+                    courseId,
+                    status: false,
+                    error: lastError.message,
+                };
+            })
+        );
+
+        const failed = response.filter((result) => result.value?.status === false);
+
+        if (failed.length > 0) {
+            console.error("Gagal menghapus tugas di kelas:", failed);
+            return {
+                status: false,
+                message: "Ada tugas yang gagal dihapus",
+                detail: failed.map((f) => f.value.courseId),
+            };
+        }
+
+        return {
+            status: true,
+            message: "Semua tugas berhasil dihapus",
+        };
+    }
 }
 
 export default new AssignmentService();
