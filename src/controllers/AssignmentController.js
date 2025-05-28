@@ -8,13 +8,14 @@ class AssignmentController {
         this.getAllAssignments = this.getAllAssignments.bind(this);
         this.createBatchAssignments = this.createBatchAssignments.bind(this);
         this.publishAllAssignments = this.publishAllAssignments.bind(this);
+        this.deleteBatchAssignments = this.deleteBatchAssignments.bind(this);
     }
 
     async getAllAssignments(req, res, next) {
         try {
             const assignments = await this.service.listAssignments();
 
-            console.log(assignments)
+            console.log(assignments);
 
             res.json({
                 status: true,
@@ -47,6 +48,17 @@ class AssignmentController {
         try {
             const { assignments } = req.body;
             const responses = await this.service.publishAssignment(assignments);
+
+            res.json(responses);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async deleteBatchAssignments(req, res, next) {
+        try {
+            const { assignments } = req.body;
+            const responses = await this.service.deleteBatchAssignment(assignments);
 
             res.json(responses);
         } catch (error) {
