@@ -52,19 +52,19 @@ class TopicService {
 
                     return {
                         courseId,
-                        success: true,
+                        status: true,
                     };
                 } catch (error) {
                     console.log("Terjadi error saat membuat topik di:", courseId, " Error:", error.message);
                     return {
                         courseId,
-                        success: false,
+                        status: false,
                     };
                 }
             })
         );
 
-        const hasFailed = response.some((r) => r.success === false);
+        const hasFailed = response.some((r) => r.status === false);
 
         if (hasFailed) {
             await Promise.allSettled(
@@ -77,13 +77,13 @@ class TopicService {
             );
 
             return {
-                success: false,
+                status: false,
                 message: "Ada topik yang gagal dibuat, berhasil rollback",
             };
         }
 
         return {
-            success: true,
+            status: true,
             message: "Semua tugas berhasil dibuat",
         };
     }

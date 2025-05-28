@@ -166,19 +166,19 @@ class AssignmentService {
 
                     return {
                         courseId,
-                        success: true,
+                        status: true,
                     };
                 } catch (error) {
                     console.log("Terjadi error saat membuat tugas di:", courseId, " Error:", error.message);
                     return {
                         courseId,
-                        success: false,
+                        status: false,
                     };
                 }
             })
         );
 
-        const hasFailed = response.some((r) => r.success === false);
+        const hasFailed = response.some((r) => r.status === false);
 
         if (hasFailed) {
             await Promise.allSettled(
@@ -191,13 +191,13 @@ class AssignmentService {
             );
 
             return {
-                success: false,
+                status: false,
                 message: "Ada tugas yang gagal dibuat, berhasil rollback",
             };
         }
 
         return {
-            success: true,
+            status: true,
             message: "Semua tugas berhasil dibuat",
         };
     }
@@ -216,14 +216,14 @@ class AssignmentService {
                     });
 
                     return {
-                        success: true,
+                        status: true,
                         courseId,
                         courseWorkId,
                     };
                 } catch (error) {
                     console.log("Gagal saat publish tugas untuk kelas", courseId, " Error:", error.message);
                     return {
-                        success: false,
+                        status: false,
                         courseId,
                         courseWorkId,
                     };
@@ -231,18 +231,18 @@ class AssignmentService {
             })
         );
 
-        const failed = response.filter((r) => r.success === false);
+        const failed = response.filter((r) => r.status === false);
 
         if (failed) {
             return {
-                success: "partial",
+                status: "partial",
                 message: "Tugas ini gagal dipublish di beberapa kelas, silakan cek sendiri",
                 detail: failed.map((f) => f.courseId),
             };
         }
 
         return {
-            success: true,
+            status: true,
             message: "Semua tugas berhasil dipublish",
         };
     }
