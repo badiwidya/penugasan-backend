@@ -42,7 +42,7 @@ class CourseService {
                             id: course.id,
                             name: course.name,
                             status: false,
-                        }
+                        };
                     }
                 })
             );
@@ -138,6 +138,23 @@ class CourseService {
         } catch (error) {
             console.error("Terjadi kesalahan saat mengambil data topik di kelas:", error);
             const err = new Error("Gagal mengambil data topik di kelas", courseId);
+            err.statusCode = error.code || 500;
+
+            throw err;
+        }
+    }
+
+    async getMaterials(courseId) {
+        try {
+            const response = await this.classroom.courses.courseWorkMaterials.list({
+                courseId,
+                pageSize: 200,
+            });
+
+            return response.data.courseWorkMaterial || [];
+        } catch (error) {
+            console.error("Terjadi kesalahan saat mengambil data materi di kelas:", error);
+            const err = new Error("Gagal mengambil data materi di kelas", courseId);
             err.statusCode = error.code || 500;
 
             throw err;
